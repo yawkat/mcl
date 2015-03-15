@@ -44,15 +44,28 @@ def launch(profile, version):
     with open(game_dir + "/versions/" + version + "/" + version + ".json") as f:
         version_info = json.load(f)
 
-    mod_classpath = ""
+    main_jar = game_dir + "/versions/" + version + "/" + version + ".jar"
+    classpath = ""
     if "mods" in config and version in config["mods"]:
         for mod in config["mods"][version]:
             log("Loading mod %s" % mod)
-            mod_classpath += ":" + mod
-    if mod_classpath == "":
+            classpath += mod + ":"
+    if classpath == "":
         log("No mods loaded.")
+    else:
+        patched = game_dir + "/versions/" + version + "/" + version + "-unsigned.jar"
+        if not os.path.isfile(patched):
+            log("Patching minecraft jar for mod support...")
+            import zipfile
+            with zipfile.ZipFile(main_jar, "r") as zin:
+                with zipfile.ZipFile(patched, "w") as zout:
+                    for item in zin.infolist():
+                        buf = zin.read(item.filename)
+                        if item.filename.find("META-INF") != 0:
+                            zout.writestr(item, buf)
+        main_jar = patched
 
-    classpath = game_dir + "/versions/" + version + "/" + version + ".jar"
+    classpath += main_jar
     for lib in version_info["libraries"]:
         if "rules" in lib:
             accept = True
@@ -82,8 +95,6 @@ def launch(profile, version):
         classpath += lib_artifact + "/"
         classpath += lib_version + "/"
         classpath += lib_artifact + "-" + lib_version + ".jar"
-
-    classpath += mod_classpath
 
     cmdline = [
         "java",

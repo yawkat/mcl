@@ -20,3 +20,15 @@ Config
 ------
 
 Data is stored in `~/.config/mcl.json`.
+
+### Mods
+
+In `~/.config/mcl.json`, a property of the following format can be defined:
+
+```json
+"mods": {
+    "<minecraft_version>": [
+        "<path_to_mod_jar>"
+    ]
+},
+```
