@@ -24,7 +24,7 @@ def _build_repo(response):
         "client_token": response["clientToken"],
         "uuid": profile["id"],
         "name": profile["name"],
-        "legacy": profile["legacy"]
+        "legacy": "legacy" in profile and profile["legacy"]
     }
 
 def login(username, password):

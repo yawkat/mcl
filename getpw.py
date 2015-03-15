@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 def _console(title, msg):
+    import getpass
     return getpass.getpass(msg)
 
 def _gui(title, msg):
