@@ -5,40 +5,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os.path
+import config
 import json
-import auth
+import cached_auth
+
+from util import *
 
 game_dir = os.path.expanduser("~/.minecraft")
-
-config_file = os.path.expanduser("~/.config/mcl.json")
-if os.path.isfile(config_file):
-    with open(config_file) as f:
-        config = json.load(f)
-else:
-    config = {}
-
-def log(msg, color=36):
-    print(u"\u001b[" + str(color) + "m\u001b[1m" + msg + u"\u001b[0m")
-
-def _save_config():
-    with open(config_file, "w") as f:
-        json.dump(config, f)
-
-def authenticate(username):
-    if "profiles" not in config:
-        config["profiles"] = {}
-    if username in config["profiles"]:
-        profile = config["profiles"][username]
-        profile = auth.refresh(profile)
-        config["profiles"][username] = profile
-        _save_config()
-        return profile
-    import getpw
-    pw = getpw.getpw("Password", "Password for '%s': " % username)
-    profile = auth.login(username, pw)
-    config["profiles"][username] = profile
-    _save_config()
-    return profile
 
 def launch(profile, version):
     with open(game_dir + "/versions/" + version + "/" + version + ".json") as f:
@@ -46,8 +19,8 @@ def launch(profile, version):
 
     main_jar = game_dir + "/versions/" + version + "/" + version + ".jar"
     classpath = ""
-    if "mods" in config and version in config["mods"]:
-        for mod in config["mods"][version]:
+    if "mods" in config.config and version in config.config["mods"]:
+        for mod in config.config["mods"][version]:
             log("Loading mod %s" % mod)
             classpath += mod + ":"
     if classpath == "":
@@ -141,18 +114,18 @@ def main():
 
     parser = argparse.ArgumentParser()
     default_version = None
-    if "version" in config:
-        default_version = config["version"]
+    if "version" in config.config:
+        default_version = config.config["version"]
     parser.add_argument("username", nargs=1)
     parser.add_argument("--version", default=default_version, required=(default_version is None))
     args = parser.parse_args()
     if args.version != default_version:
-        config["version"] = args.version
-        _save_config()
+        config.config["version"] = args.version
+        config.save()
 
     log("Version:  %s" % args.version)
 
-    profile = authenticate(args.username[0])
+    profile = cached_auth.authenticate(args.username[0])
 
     log("Username: %s" % profile["name"])
     log("UUID:     %s" % profile["uuid"])
