@@ -5,7 +5,7 @@ import cached_auth
 
 from util import *
 
-def launch(profile, binary, server):
+def launch(profile, binary, server, debug):
     cmdline = [
         binary,
         "--username", profile["name"],
@@ -13,6 +13,8 @@ def launch(profile, binary, server):
         "--accessToken", profile["access_token"],
         "--server", server,
     ]
+    if debug:
+        cmdline.append("--debug")
 
     log("Command line: " + " ".join(cmdline), 90)
 
@@ -29,6 +31,7 @@ def main():
     parser.add_argument("username", nargs=1)
     parser.add_argument("server", nargs=1)
     parser.add_argument("--binary", default=default_binary, required=(default_binary is None))
+    parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
     if args.binary != default_binary:
         config.config["steven_binary"] = args.binary
@@ -36,13 +39,14 @@ def main():
 
     log("Binary:   %s" % args.binary)
     log("Server:   %s" % args.server[0])
+    log("Debug:    %s" % args.debug)
 
     profile = cached_auth.authenticate(args.username[0])
 
     log("Username: %s" % profile["name"])
     log("UUID:     %s" % profile["uuid"])
 
-    launch(profile, args.binary, args.server[0])
+    launch(profile, args.binary, args.server[0], args.debug)
 
 if __name__ == '__main__':
     main()
