@@ -2,8 +2,11 @@
 
 import config
 import cached_auth
+import os.path
 
 from util import *
+
+game_dir = os.path.expanduser("~/.minecraft")
 
 def launch(profile, binary, server, debug):
     cmdline = [
@@ -19,7 +22,7 @@ def launch(profile, binary, server, debug):
     log("Command line: " + " ".join(cmdline), 90)
 
     import subprocess
-    subprocess.call(cmdline)
+    subprocess.call(cmdline, cwd=game_dir)
 
 def main():
     import argparse
